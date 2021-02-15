@@ -1,0 +1,64 @@
+[ENABLE]
+
+aobscan(m_noPlacementCost,0F B6 80 40 05 00 00 85 C0 0F) // should be unique
+alloc(newmem,$1000,m_noPlacementCost)
+alloc(RESTORE_PlacementCost,8)
+
+label(code)
+label(return)
+
+newmem:
+  mov [RESTORE_PlacementCost],rax
+  mov [rax+00000540],#1
+
+code:
+  movzx eax,byte ptr [rax+00000540]
+  jmp return
+
+m_noPlacementCost:
+  jmp newmem
+  nop 2
+return:
+registersymbol(m_noPlacementCost)
+registersymbol(RESTORE_PlacementCost)
+
+[DISABLE]
+{$lua}
+  writeInteger('[RESTORE_PlacementCost]+540',0)
+{$asm}
+unregistersymbol(RESTORE_PlacementCost)
+dealloc(RESTORE_PlacementCost,8)
+
+m_noPlacementCost:
+  db 0F B6 80 40 05 00 00
+
+unregistersymbol(m_noPlacementCost)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 2D1B68CAD56
+
+2D1B68CAD25: 33 D2                          - xor edx,edx
+2D1B68CAD27: 48 8D AD 00 00 00 00           - lea rbp,[rbp+00000000]
+2D1B68CAD2E: 49 BB 90 69 2F 74 D2 02 00 00  - mov r11,000002D2742F6990
+2D1B68CAD38: 41 FF D3                       - call r11
+2D1B68CAD3B: 85 C0                          - test eax,eax
+2D1B68CAD3D: 0F 84 CD 00 00 00              - je 2D1B68CAE10
+2D1B68CAD43: 48 B8 10 8E 4C E7 D0 02 00 00  - mov rax,_localPlayer
+2D1B68CAD4D: 48 8B 00                       - mov rax,[rax]
+2D1B68CAD50: 48 8B C8                       - mov rcx,rax
+2D1B68CAD53: 83 39 00                       - cmp dword ptr [rcx],00
+// ---------- INJECTING HERE ----------
+2D1B68CAD56: 0F B6 80 40 05 00 00           - movzx eax,byte ptr [rax+00000540]
+// ---------- DONE INJECTING  ----------
+2D1B68CAD5D: 85 C0                          - test eax,eax
+2D1B68CAD5F: 0F 85 AB 00 00 00              - jne 2D1B68CAE10
+2D1B68CAD65: 48 8B 86 08 01 00 00           - mov rax,[rsi+00000108]
+2D1B68CAD6C: 48 8B C8                       - mov rcx,rax
+2D1B68CAD6F: 83 38 00                       - cmp dword ptr [rax],00
+2D1B68CAD72: 48 8D 6D 00                    - lea rbp,[rbp+00]
+2D1B68CAD76: 49 BB 90 97 2F 74 D2 02 00 00  - mov r11,000002D2742F9790
+2D1B68CAD80: 41 FF D3                       - call r11
+2D1B68CAD83: 48 8B C8                       - mov rcx,rax
+2D1B68CAD86: 33 D2                          - xor edx,edx
+}
