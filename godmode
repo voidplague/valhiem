@@ -1,0 +1,64 @@
+[ENABLE]
+//aobscan(m_godMode,0F B6 80 41 05 00 00) before game update
+aobscan(m_godMode,0F B6 80 49 05 00 00) //after game update
+alloc(newmem,$1000,m_godMode)
+alloc(RESTOREm_godMode,8)
+
+label(code)
+label(return)
+
+newmem:
+  mov [RESTOREm_godMode],rax
+  mov [rax+00000549],#1
+
+code:
+  movzx eax,byte ptr [rax+00000549]
+  jmp return
+
+m_godMode:
+  jmp newmem
+  nop 2
+return:
+registersymbol(m_godMode)
+registersymbol(RESTOREm_godMode)
+
+[DISABLE]
+{$lua}
+  writeInteger('[RESTOREm_godMode]+549',0)
+{$asm}
+unregistersymbol(RESTOREm_godMode)
+dealloc(RESTOREm_godMode,8)
+
+m_godMode:
+  db 0F B6 80 49 05 00 00
+
+unregistersymbol(m_godMode)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 22CD0CAE39B
+
+22CD0CAE37E: 00 00                 - add [rax],al
+22CD0CAE380: 01 04 02              - add [rdx+rax],eax
+22CD0CAE383: 05 04 03 01 50        - add eax,50010304
+22CD0CAE388: 00 00                 - add [rax],al
+22CD0CAE38A: 00 00                 - add [rax],al
+22CD0CAE38C: 00 00                 - add [rax],al
+22CD0CAE38E: 00 00                 - add [rax],al
+22CD0CAE390: 48 83 EC 08           - sub rsp,08
+22CD0CAE394: 48 89 0C 24           - mov [rsp],rcx
+22CD0CAE398: 48 8B C1              - mov rax,rcx
+// ---------- INJECTING HERE ----------
+22CD0CAE39B: 0F B6 80 49 05 00 00  - movzx eax,byte ptr [rax+00000549]
+// ---------- DONE INJECTING  ----------
+22CD0CAE3A2: 48 83 C4 08           - add rsp,08
+22CD0CAE3A6: C3                    - ret 
+22CD0CAE3A7: 00 01                 - add [rcx],al
+22CD0CAE3A9: 04 01                 - add al,01
+22CD0CAE3AB: 00 04 02              - add [rdx+rax],al
+22CD0CAE3AE: 00 00                 - add [rax],al
+22CD0CAE3B0: 00 00                 - add [rax],al
+22CD0CAE3B2: 00 00                 - add [rax],al
+22CD0CAE3B4: 00 00                 - add [rax],al
+22CD0CAE3B6: 00 00                 - add [rax],al
+}
