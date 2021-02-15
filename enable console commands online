@@ -1,0 +1,63 @@
+define(address,Console:IsVisible+38 )
+define(bytes,48 8B 40 18 48 8B C8)
+
+[ENABLE]
+{$lua}
+LaunchMonoDataCollector()
+{$asm}
+
+assert(address,bytes)
+alloc(newmem,$1000,Console:IsVisible+38 )
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov byte ptr [rax+40],01
+  mov rax,[rax+18] //+40 enable cheats
+  mov rcx,rax
+  jmp return
+
+address:
+  jmp newmem
+  nop 2
+return:
+
+[DISABLE]
+
+address:
+  db bytes
+  // mov rax,[rax+18]
+  // mov rcx,rax
+
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Console:IsVisible+38
+
+Console:IsVisible+4: 48 83 EC 20                    - sub rsp,20
+Console:IsVisible+8: 48 B8 30 5E D3 CB 86 02 00 00  - mov rax,00000286CBD35E30
+Console:IsVisible+12: 48 8B 08                       - mov rcx,[rax]
+Console:IsVisible+15: 90                             - nop 
+Console:IsVisible+16: 49 BB 40 40 C8 EC 86 02 00 00  - mov r11,UnityEngine:Object:op_Implicit
+Console:IsVisible+20: 41 FF D3                       - call r11
+Console:IsVisible+23: 85 C0                          - test eax,eax
+Console:IsVisible+25: 0F 84 42 00 00 00              - je Console:IsVisible+6d
+Console:IsVisible+2b: 48 B8 30 5E D3 CB 86 02 00 00  - mov rax,00000286CBD35E30
+Console:IsVisible+35: 48 8B 00                       - mov rax,[rax]
+// ---------- INJECTING HERE ----------
+Console:IsVisible+38: 48 8B 40 18                    - mov rax,[rax+18]
+// ---------- DONE INJECTING  ----------
+Console:IsVisible+3c: 48 8B C8                       - mov rcx,rax
+Console:IsVisible+3f: 83 38 00                       - cmp dword ptr [rax],00
+Console:IsVisible+42: 48 8D 6D 00                    - lea rbp,[rbp+00]
+Console:IsVisible+46: 49 BB 40 9B C7 EC 86 02 00 00  - mov r11,UnityEngine:Component:get_gameObject
+Console:IsVisible+50: 41 FF D3                       - call r11
+Console:IsVisible+53: 48 8B C8                       - mov rcx,rax
+Console:IsVisible+56: 83 38 00                       - cmp dword ptr [rax],00
+Console:IsVisible+59: 48 8D 64 24 00                 - lea rsp,[rsp+00]
+Console:IsVisible+5e: 49 BB 30 B3 C7 EC 86 02 00 00  - mov r11,UnityEngine:GameObject:get_activeInHierarchy
+Console:IsVisible+68: 41 FF D3                       - call r11
+}
