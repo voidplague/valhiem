@@ -1,0 +1,64 @@
+[ENABLE]
+
+aobscan(m_autoPickupRange,F3 0F 10 86 2C 05 00 00) // should be unique
+alloc(newmem,$1000,m_autoPickupRange)
+alloc(RESTOREm_autoPickupRange,8)
+
+label(code)
+label(return)
+
+newmem:
+  mov [RESTOREm_autoPickupRange],rsi
+  mov [rsi+0000052C],(float)1000
+
+code:
+  movss xmm0,[rsi+0000052C]
+  jmp return
+
+m_autoPickupRange:
+  jmp newmem
+  nop 3
+return:
+registersymbol(m_autoPickupRange)
+registersymbol(RESTOREm_autoPickupRange)
+
+[DISABLE]
+{$lua}
+  writeFloat('[RESTOREm_autoPickupRange]+52C',2)
+{$asm}
+unregistersymbol(RESTOREm_autoPickupRange)
+dealloc(RESTOREm_autoPickupRange,8)
+
+m_autoPickupRange:
+  db F3 0F 10 86 2C 05 00 00
+
+unregistersymbol(m_autoPickupRange)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 2D1B4848402
+
+2D1B48483C7: 48 8D 10                       - lea rdx,[rax]
+2D1B48483CA: 48 8D 6D 00                    - lea rbp,[rbp+00]
+2D1B48483CE: 49 BB E0 C7 AD AC D1 02 00 00  - mov r11,000002D1ACADC7E0
+2D1B48483D8: 41 FF D3                       - call r11
+2D1B48483DB: 48 63 85 F0 FD FF FF           - movsxd  rax,dword ptr [rbp-00000210]
+2D1B48483E2: 89 85 50 FE FF FF              - mov [rbp-000001B0],eax
+2D1B48483E8: 48 63 85 F4 FD FF FF           - movsxd  rax,dword ptr [rbp-0000020C]
+2D1B48483EF: 89 85 54 FE FF FF              - mov [rbp-000001AC],eax
+2D1B48483F5: 48 63 85 F8 FD FF FF           - movsxd  rax,dword ptr [rbp-00000208]
+2D1B48483FC: 89 85 58 FE FF FF              - mov [rbp-000001A8],eax
+// ---------- INJECTING HERE ----------
+2D1B4848402: F3 0F 10 86 2C 05 00 00        - movss xmm0,[rsi+0000052C]
+// ---------- DONE INJECTING  ----------
+2D1B484840A: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+2D1B484840E: 4C 63 86 84 05 00 00           - movsxd  r8,dword ptr [rsi+00000584]
+2D1B4848415: F2 0F 10 C8                    - movsd xmm1,xmm0
+2D1B4848419: F2 0F 5A C9                    - cvtsd2ss xmm1,xmm1
+2D1B484841D: 48 8B C5                       - mov rax,rbp
+2D1B4848420: 48 05 60 FE FF FF              - add rax,FFFFFFFFFFFFFE60
+2D1B4848426: 48 8B 8D 50 FE FF FF           - mov rcx,[rbp-000001B0]
+2D1B484842D: 48 89 8D 60 FE FF FF           - mov [rbp-000001A0],rcx
+2D1B4848434: 48 63 8D 58 FE FF FF           - movsxd  rcx,dword ptr [rbp-000001A8]
+2D1B484843B: 89 8D 68 FE FF FF              - mov [rbp-00000198],ecx
+}
