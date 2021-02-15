@@ -1,0 +1,55 @@
+[ENABLE]
+
+aobscan(Skills,F3 0F 11 6E 1C 48 8B CE) // should be unique
+alloc(newmem,$1000,Skills)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  //movss [rsi+1C],xmm5
+  mov [rsi+1C],(float)999
+  jmp return
+
+Skills:
+  jmp newmem
+return:
+registersymbol(Skills)
+
+[DISABLE]
+
+Skills:
+  db F3 0F 11 6E 1C
+
+unregistersymbol(Skills)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 20FE97866F5
+
+20FE97866CA: F3 0F 5A C9                    - cvtss2sd xmm1,xmm1
+20FE97866CE: F2 0F 59 C1                    - mulsd xmm0,xmm1
+20FE97866D2: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+20FE97866D6: F3 0F 11 6D F4                 - movss [rbp-0C],xmm5
+20FE97866DB: F3 0F 10 46 1C                 - movss xmm0,[rsi+1C]
+20FE97866E0: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+20FE97866E4: F3 0F 10 4D F4                 - movss xmm1,[rbp-0C]
+20FE97866E9: F3 0F 5A C9                    - cvtss2sd xmm1,xmm1
+20FE97866ED: F2 0F 58 C1                    - addsd xmm0,xmm1
+20FE97866F1: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+// ---------- INJECTING HERE ----------
+20FE97866F5: F3 0F 11 6E 1C                 - movss [rsi+1C],xmm5
+// ---------- DONE INJECTING  ----------
+20FE97866FA: 48 8B CE                       - mov rcx,rsi
+20FE97866FD: 90                             - nop 
+20FE97866FE: 49 BB 30 68 78 E9 0F 02 00 00  - mov r11,0000020FE9786830
+20FE9786708: 41 FF D3                       - call r11
+20FE978670B: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+20FE978670F: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+20FE9786713: F3 0F 11 6D F0                 - movss [rbp-10],xmm5
+20FE9786718: F3 0F 10 46 1C                 - movss xmm0,[rsi+1C]
+20FE978671D: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+20FE9786721: F3 0F 10 4D F0                 - movss xmm1,[rbp-10]
+}
