@@ -1,0 +1,73 @@
+[ENABLE]
+
+aobscan(m_maxPlaceDistance,F3 0F 10 8E FC 04 00 00) // should be unique
+alloc(newmem,$1000,m_maxPlaceDistance)
+alloc(restore_maxPlaceDistance,8)
+
+label(code)
+label(return)
+label(maxPlaceDistance)
+
+newmem:
+  mov [restore_maxPlaceDistance],rsi
+
+code:
+  push rbx
+  mov rbx,[maxPlaceDistance]
+  mov [rsi+000004FC],rbx
+  movss xmm1,[rsi+000004FC]
+  pop rbx
+  jmp return
+
+maxPlaceDistance:
+  dq (float)100
+
+m_maxPlaceDistance:
+  jmp newmem
+  nop 3
+return:
+registersymbol(m_maxPlaceDistance)
+registersymbol(restore_maxPlaceDistance)
+registersymbol(maxPlaceDistance)
+
+[DISABLE]
+{$lua}
+  writeFloat('[restore_maxPlaceDistance]+4FC',8)
+{$asm}
+unregistersymbol(restore_maxPlaceDistance)
+dealloc(restore_maxPlaceDistance,8)
+
+m_maxPlaceDistance:
+  db F3 0F 10 8E FC 04 00 00
+
+unregistersymbol(m_maxPlaceDistance)
+unregistersymbol(maxPlaceDistance)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 2D1B4831C97
+
+2D1B4831C6C: 48 83 C0 B8                    - add rax,-48
+2D1B4831C70: 48 8B 4D 88                    - mov rcx,[rbp-78]
+2D1B4831C74: 48 89 4D B8                    - mov [rbp-48],rcx
+2D1B4831C78: 48 63 4D 90                    - movsxd  rcx,dword ptr [rbp-70]
+2D1B4831C7C: 89 4D C0                       - mov [rbp-40],ecx
+2D1B4831C7F: 48 8D 08                       - lea rcx,[rax]
+2D1B4831C82: 48 8D 6D 00                    - lea rbp,[rbp+00]
+2D1B4831C86: 49 BB 50 64 AE AC D1 02 00 00  - mov r11,000002D1ACAE6450
+2D1B4831C90: 41 FF D3                       - call r11
+2D1B4831C93: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+// ---------- INJECTING HERE ----------
+2D1B4831C97: F3 0F 10 8E FC 04 00 00        - movss xmm1,[rsi+000004FC]
+// ---------- DONE INJECTING  ----------
+2D1B4831C9F: F3 0F 5A C9                    - cvtss2sd xmm1,xmm1
+2D1B4831CA3: 66 0F 2F C8                    - comisd xmm1,xmm0
+2D1B4831CA7: 0F 86 C6 00 00 00              - jbe 2D1B4831D73
+2D1B4831CAD: 48 8B CD                       - mov rcx,rbp
+2D1B4831CB0: 48 81 C1 18 FF FF FF           - add rcx,FFFFFFFFFFFFFF18
+2D1B4831CB7: 48 8D AD 00 00 00 00           - lea rbp,[rbp+00000000]
+2D1B4831CBE: 49 BB 20 86 EB AE D1 02 00 00  - mov r11,000002D1AEEB8620
+2D1B4831CC8: 41 FF D3                       - call r11
+2D1B4831CCB: 48 8B C8                       - mov rcx,rax
+2D1B4831CCE: 83 39 00                       - cmp dword ptr [rcx],00
+}
