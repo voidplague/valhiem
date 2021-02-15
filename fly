@@ -1,0 +1,64 @@
+[ENABLE]
+//aobscan(m_debugFly,0F B6 86 40 05 00 00 EB) before game update
+aobscan(m_debugFly,0F B6 86 48 05 00 00 EB) //after game update
+alloc(newmem,$1000,m_debugFly)
+alloc(RESTOREm_debugFly,8)
+
+label(code)
+label(return)
+
+newmem:
+  mov [RESTOREm_debugFly],rsi
+  mov [rsi+00000548],#1
+
+code:
+  movzx eax,byte ptr [rsi+00000548]
+  jmp return
+
+m_debugFly:
+  jmp newmem
+  nop 2
+return:
+registersymbol(m_debugFly)
+registersymbol(RESTOREm_debugFly)
+
+[DISABLE]
+{$lua}
+  writeInteger('[RESTOREm_debugFly]+548',0)
+{$asm}
+unregistersymbol(RESTOREm_debugFly)
+dealloc(RESTOREm_debugFly,8)
+
+m_debugFly:
+  db 0F B6 86 48 05 00 00
+
+unregistersymbol(m_debugFly)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 22CCD21667F
+
+22CCD216658: 48 89 75 F8                    - mov [rbp-08],rsi
+22CCD21665C: 48 8B F1                       - mov rsi,rcx
+22CCD21665F: 48 8B 86 D0 00 00 00           - mov rax,[rsi+000000D0]
+22CCD216666: 48 8B C8                       - mov rcx,rax
+22CCD216669: 83 38 00                       - cmp dword ptr [rax],00
+22CCD21666C: 66 90                          - nop 2
+22CCD21666E: 49 BB 50 04 D6 CA 2D 02 00 00  - mov r11,0000022DCAD60450
+22CCD216678: 41 FF D3                       - call r11
+22CCD21667B: 85 C0                          - test eax,eax
+22CCD21667D: 74 09                          - je 22CCD216688
+// ---------- INJECTING HERE ----------
+22CCD21667F: 0F B6 86 48 05 00 00           - movzx eax,byte ptr [rsi+00000548]
+// ---------- DONE INJECTING  ----------
+22CCD216686: EB 33                          - jmp 22CCD2166BB
+22CCD216688: 48 8B 86 D0 00 00 00           - mov rax,[rsi+000000D0]
+22CCD21668F: 48 8B C8                       - mov rcx,rax
+22CCD216692: 83 39 00                       - cmp dword ptr [rcx],00
+22CCD216695: 48 8B 40 18                    - mov rax,[rax+18]
+22CCD216699: 48 8B C8                       - mov rcx,rax
+22CCD21669C: 48 BA 60 B0 B3 DC 2D 02 00 00  - mov rdx,0000022DDCB3B060
+22CCD2166A6: 45 33 C0                       - xor r8d,r8d
+22CCD2166A9: 83 38 00                       - cmp dword ptr [rax],00
+22CCD2166AC: 66 90                          - nop 2
+}
